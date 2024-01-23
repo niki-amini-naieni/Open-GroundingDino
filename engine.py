@@ -184,7 +184,6 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
         box_threshold = 0.35
         text_threshold = 0.25
         tokenizer = model_no_ddp.tokenizer
-        print("tokenized: " + str(tokenized))
         for sample_ind in range(len(targets)):
             tokenized = tokenizer(input_captions[sample_ind])
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
