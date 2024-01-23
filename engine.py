@@ -253,6 +253,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
                 break
 
     print("Count MAE: " + str(np.mean(count_errs)))
+    print("Count RMSE: " + str(np.sqrt(np.mean(count_errs ** 2))))
     if args.save_results:
         import os.path as osp
         
