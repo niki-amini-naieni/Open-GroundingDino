@@ -2,7 +2,7 @@
 """
 Train and eval functions used in main.py
 """
-
+import numpy as np
 import math
 import os
 import sys
@@ -158,11 +158,11 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
     caption = " . ".join(cat_list) + ' .'
     print("Input text prompt:", caption)
 
+    count_errs = []
     for samples, targets in metric_logger.log_every(data_loader, 10, header, logger=logger):
         samples = samples.to(device)
 
         targets = [{k: to_device(v, device) for k, v in t.items()} for t in targets]
-        print("targets: " + str(targets))
 
         bs = samples.tensors.shape[0]
         input_captions = [caption] * bs
@@ -171,6 +171,13 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
             outputs = model(samples, captions=input_captions)
 
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
+
+        for sample_ind in range(len(targets)):
+            pred_labels = outputs[sample_ind]["labels"]
+            gt_labels = targets[sample_ind]["labels"]
+            abs_err = np.abs(len(pred_labels) - len(gt_labels))
+            count_errs.append(abs_err)
+            print(abs_err)
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
         # [scores: [100], labels: [100], boxes: [100, 4]] x B
@@ -240,6 +247,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
                 print("BREAK!"*5)
                 break
 
+    print("Count MAE: " + str(np.mean(count_errs)))
     if args.save_results:
         import os.path as osp
         
