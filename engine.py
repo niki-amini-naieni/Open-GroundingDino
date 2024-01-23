@@ -175,6 +175,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         for sample_ind in range(len(targets)):
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
+            pred_logits = pred_logits.max(dim=1)
             print("gt_cnt: " + str(gt_cnt))
             print("pred_logits.shape: " + str(pred_logits.shape))
 
