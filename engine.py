@@ -212,7 +212,7 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
             print("pred phrases: " + str(phrases))
             print("gt_phrase: " + gt_phrase)
 
-            count_errs.append(np.abs(gt_cnt - len(phrases)))
+            count_errs.append(np.abs(gt_cnt - pred_cnt))
 
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
