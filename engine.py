@@ -168,11 +168,9 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
         targets = [{k: to_device(v, device) for k, v in t.items()} for t in targets]
 
         bs = samples.tensors.shape[0]
-        input_captions = [caption] * bs
-        print("prev input captions: " + str(input_captions))
         input_captions = []
         for sample_ind in range(len(targets)):
-            input_captions.append(val_class_names[targets[sample_ind]["labels"][0]] + ' .')
+            input_captions.append("the photo of many " + val_class_names[targets[sample_ind]["labels"][0]] + ' .')
         print("input_captions: " + str(input_captions))
 
         with torch.cuda.amp.autocast(enabled=args.amp):
@@ -187,7 +185,7 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
         for sample_ind in range(len(targets)):
             tokenized = tokenizer(input_captions[sample_ind])
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
-            gt_phrase = val_class_names[targets[sample_ind]["labels"][0]]
+            gt_phrase = "the photo of many " + val_class_names[targets[sample_ind]["labels"][0]]
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
             print("pred_logits: " + str(pred_logits))
             cls_tokens = pred_logits.max(dim=1)[0] # [0] takes the maxes, not the indices
