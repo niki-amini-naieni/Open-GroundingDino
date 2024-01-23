@@ -95,6 +95,7 @@ class CocoGroundingEvaluator(object):
 
             boxes = prediction["boxes"]
             boxes = convert_to_xywh(boxes).tolist()
+            print("results: " + str(boxes[0]))
             scores = prediction["scores"].tolist()
             labels = prediction["labels"].tolist()
 

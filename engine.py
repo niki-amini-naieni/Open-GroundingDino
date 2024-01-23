@@ -172,8 +172,6 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
-        print("results: " + str(results[0]))
-        print("targets: " + str(targets[0]))
         # [scores: [100], labels: [100], boxes: [100, 4]] x B
         if 'segm' in postprocessors.keys():
             target_sizes = torch.stack([t["size"] for t in targets], dim=0)
