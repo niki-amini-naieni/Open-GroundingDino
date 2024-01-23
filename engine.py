@@ -162,6 +162,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
         samples = samples.to(device)
 
         targets = [{k: to_device(v, device) for k, v in t.items()} for t in targets]
+        print("targets: " + str(targets))
 
         bs = samples.tensors.shape[0]
         input_captions = [caption] * bs
