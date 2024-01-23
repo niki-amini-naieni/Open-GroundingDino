@@ -174,8 +174,8 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
 
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
 
-        box_threshold = 0.25
-        text_threshold = 0.35
+        box_threshold = 0.35
+        text_threshold = 0.25
         tokenizer = model_no_ddp.tokenizer
         tokenized = tokenizer(caption)
         print("tokenized: " + str(tokenized))
