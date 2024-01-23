@@ -192,7 +192,7 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
             modified_phrase = gt_phrase + ' .' 
             tokenized = tokenizer(modified_phrase)
             with torch.cuda.amp.autocast(enabled=args.amp):
-                outputs = model(samples, captions=[modified_phrase])
+                outputs = model(samples[sample_ind], captions=[modified_phrase])
             pred_logits = outputs["pred_logits"].sigmoid()[0] 
             cls_tokens = pred_logits.max(dim=1)[0] # [0] takes the maxes, not the indices
             cls_mask = cls_tokens > box_threshold
