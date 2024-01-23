@@ -181,19 +181,21 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
         print("tokenized: " + str(tokenized))
         for sample_ind in range(len(targets)):
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
+            #gt_phrase = targets[sample_ind][]
+            print("targets[sample_ind]: " + str(targets[sample_ind]))
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
             cls_tokens = pred_logits.max(dim=1)[0] # Take the maxes, not the indices
             cls_mask = cls_tokens > box_threshold
             logits_masked_by_cls = pred_logits[cls_mask]
             print("gt_cnt: " + str(gt_cnt))
             print("logits_masked_by_cls.shape: " + str(logits_masked_by_cls.shape))
-            count_errs.append(np.abs(gt_cnt - logits_masked_by_cls.shape[0]))
 
             # DEBUG
             sep_idx = [i for i in range(len(tokenized['input_ids'])) if tokenized['input_ids'][i] in [101, 102, 1012]]
             print("sep_idx: " + str(sep_idx))
         
             phrases = []
+            pred_cnt = 0
             for logit in logits_masked_by_cls:
                 max_idx = logit.argmax()
                 print("max_idx: " + str(max_idx))
@@ -203,8 +205,11 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
                 print("right_idx: " + str(right_idx))
                 left_idx = sep_idx[insert_idx - 1]
                 print("left_idx: " + str(left_idx))
-                phrases.append(get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer, left_idx, right_idx).replace('.', ''))
+                phrase = get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer, left_idx, right_idx).replace('.', '')
+                phrases.append(phrase)
                 print(phrases)
+
+            count_errs.append(np.abs(gt_cnt - logits_masked_by_cls.shape[0]))
 
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
