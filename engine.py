@@ -168,7 +168,8 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
         targets = [{k: to_device(v, device) for k, v in t.items()} for t in targets]
 
         bs = samples.tensors.shape[0]
-        #input_captions = [caption] * bs
+        input_captions = [caption] * bs
+        print("prev input captions: " + str(input_captions))
         input_captions = []
         for sample_ind in range(len(targets)):
             input_captions.append(val_class_names[targets[sample_ind]["labels"][0]])
