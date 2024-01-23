@@ -167,33 +167,29 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
 
         targets = [{k: to_device(v, device) for k, v in t.items()} for t in targets]
 
-        '''
         bs = samples.tensors.shape[0]
         input_captions = [caption] * bs
         print("prev input captions: " + str(input_captions))
         input_captions = []
         for sample_ind in range(len(targets)):
-            input_captions.append(val_class_names[targets[sample_ind]["labels"][0]])
+            input_captions.append(val_class_names[targets[sample_ind]["labels"][0]] + ' .')
         print("input_captions: " + str(input_captions))
 
         with torch.cuda.amp.autocast(enabled=args.amp):
 
             outputs = model(samples, captions=input_captions)
 
-        '''
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
 
         box_threshold = 0.35
         text_threshold = 0.25
         tokenizer = model_no_ddp.tokenizer
+        print("tokenized: " + str(tokenized))
         for sample_ind in range(len(targets)):
+            tokenized = tokenizer(input_captions[sample_ind])
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
             gt_phrase = val_class_names[targets[sample_ind]["labels"][0]]
-            modified_phrase = gt_phrase + ' .' 
-            tokenized = tokenizer(modified_phrase)
-            with torch.cuda.amp.autocast(enabled=args.amp):
-                outputs = model(samples[sample_ind], captions=[modified_phrase])
-            pred_logits = outputs["pred_logits"].sigmoid()[0] 
+            pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
             cls_tokens = pred_logits.max(dim=1)[0] # [0] takes the maxes, not the indices
             cls_mask = cls_tokens > box_threshold
             logits_masked_by_cls = pred_logits[cls_mask]
