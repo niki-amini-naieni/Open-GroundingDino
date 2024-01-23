@@ -172,14 +172,11 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
 
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
 
-        print("outputs pred_boxes.shape: " + str(outputs['pred_boxes'].shape))
-        print("targets boxes[0].shape: " + str(targets[0]['boxes'].shape))
         for sample_ind in range(len(targets)):
-            pred_labels = outputs[sample_ind]["labels"]
-            gt_labels = targets[sample_ind]["labels"]
-            abs_err = np.abs(len(pred_labels) - len(gt_labels))
-            count_errs.append(abs_err)
-            print(abs_err)
+            gt_cnt = targets[sample_ind]['boxes'].shape[0]
+            pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
+            print("gt_cnt: " + str(gt_cnt))
+            print("pred_logits.shape: " + str(pred_logits.shape))
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
         # [scores: [100], labels: [100], boxes: [100, 4]] x B
