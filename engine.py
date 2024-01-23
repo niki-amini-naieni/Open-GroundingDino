@@ -19,6 +19,7 @@ from datasets.cocogrounding_eval import CocoGroundingEvaluator
 
 from datasets.panoptic_eval import PanopticEvaluator
 
+val_class_names = ('ant', 'bird', 'book', 'bottle cap', 'bullet', 'camel', 'chair', 'chicken wing', 'donut', 'donut holder', 'flamingo', 'flower', 'flower pot', 'grape', 'horse', 'kiwi', 'milk carton', 'oyster', 'oyster shell', 'package of fresh cut fruit', 'peach', 'pill', 'polka dot', 'prawn cracker', 'sausage', 'seagull', 'shallot', 'shirt', 'skateboard', 'toilet paper roll')
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
@@ -181,10 +182,9 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
         print("tokenized: " + str(tokenized))
         for sample_ind in range(len(targets)):
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
-            #gt_phrase = targets[sample_ind][]
-            print("targets[sample_ind]: " + str(targets[sample_ind]))
+            gt_phrase = val_class_names[targets[sample_ind]["labels"][0]]
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
-            cls_tokens = pred_logits.max(dim=1)[0] # Take the maxes, not the indices
+            cls_tokens = pred_logits.max(dim=1)[0] # [0] takes the maxes, not the indices
             cls_mask = cls_tokens > box_threshold
             logits_masked_by_cls = pred_logits[cls_mask]
             print("gt_cnt: " + str(gt_cnt))
@@ -207,9 +207,12 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
                 print("left_idx: " + str(left_idx))
                 phrase = get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer, left_idx, right_idx).replace('.', '')
                 phrases.append(phrase)
-                print(phrases)
+                if phrase == gt_phrase:
+                    pred_cnt += 1
+            print("pred phrases: " + str(phrases))
+            print("gt_phrase: " + gt_phrase)
 
-            count_errs.append(np.abs(gt_cnt - logits_masked_by_cls.shape[0]))
+            count_errs.append(np.abs(gt_cnt - len(phrases)))
 
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
