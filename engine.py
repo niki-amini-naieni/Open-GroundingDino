@@ -180,7 +180,7 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
 
         box_threshold = 0.25
-        text_threshold = 0.25
+        text_threshold = 0.35
         tokenizer = model_no_ddp.tokenizer
         for sample_ind in range(len(targets)):
             tokenized = tokenizer(input_captions[sample_ind])
@@ -188,7 +188,7 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
             gt_phrase = "the photo of many " + val_class_names[targets[sample_ind]["labels"][0]]
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
             print("pred_logits: " + str(pred_logits))
-            cls_tokens = pred_logits.max(dim=1)[0] # [0] takes the maxes, not the indices
+            cls_tokens = pred_logits[:, 0] # [0] takes the maxes, not the indices
             cls_mask = cls_tokens > box_threshold
             logits_masked_by_cls = pred_logits[cls_mask]
             print("gt_cnt: " + str(gt_cnt))
@@ -199,7 +199,6 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
             print("sep_idx: " + str(sep_idx))
         
             phrases = []
-            pred_cnt = 0
             for logit in logits_masked_by_cls:
                 max_idx = logit.argmax()
                 print("max_idx: " + str(max_idx))
@@ -209,8 +208,11 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
                 print("right_idx: " + str(right_idx))
                 left_idx = sep_idx[insert_idx - 1]
                 print("left_idx: " + str(left_idx))
-                phrase = get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer, left_idx, right_idx).replace('.', '')
-                phrases.append(phrase)
+                print("logit.shape: " + str(logit.shape))
+                keep = (logit > text_threshold).sum() > 0
+                if keep:
+                    phrase = get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer, left_idx, right_idx).replace('.', '')
+                    phrases.append(phrase)
             print("pred phrases: " + str(phrases))
             print("gt_phrase: " + gt_phrase)
 
