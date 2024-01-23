@@ -204,6 +204,7 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
                 left_idx = sep_idx[insert_idx - 1]
                 print("left_idx: " + str(left_idx))
                 phrases.append(get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer, left_idx, right_idx).replace('.', ''))
+                print(phrases)
 
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
