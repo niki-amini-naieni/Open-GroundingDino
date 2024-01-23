@@ -189,7 +189,7 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
             pred_logits = outputs["pred_logits"][sample_ind]
             print("pred_logits: " + str(pred_logits))
-            cls_tokens = pred_logits[:, 0] # [0] takes the maxes, not the indices
+            cls_tokens = pred_logits.max(dim=1)[0] # [0] takes the maxes, not the indices
             cls_mask = cls_tokens > box_threshold
             logits_masked_by_cls = pred_logits[cls_mask]
             print("gt_cnt: " + str(gt_cnt))
