@@ -172,6 +172,8 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
 
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
 
+        print("outputs: " + str(outputs))
+        print("targets: " + str(targets))
         for sample_ind in range(len(targets)):
             pred_labels = outputs[sample_ind]["labels"]
             gt_labels = targets[sample_ind]["labels"]
