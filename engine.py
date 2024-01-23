@@ -217,9 +217,6 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
                 _res_prob = res['scores']
                 _res_label = res['labels']
                 res_info = torch.cat((_res_bbox, _res_prob.unsqueeze(-1), _res_label.unsqueeze(-1)), 1)
-
-                print("gt_bbox: " + str(gt_bbox))
-                print("_res_bbox: " + str(_res_bbox))
        
 
                 if 'gt_info' not in output_state_dict:
