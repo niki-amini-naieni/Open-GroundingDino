@@ -252,6 +252,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
                 print("BREAK!"*5)
                 break
 
+    count_errs = np.array(count_errs)
     print("Count MAE: " + str(np.mean(count_errs)))
     print("Count RMSE: " + str(np.sqrt(np.mean(count_errs ** 2))))
     if args.save_results:
