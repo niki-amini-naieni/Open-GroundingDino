@@ -187,6 +187,7 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
             gt_phrase = "the photo of many " + val_class_names[targets[sample_ind]["labels"][0]]
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
+            pred_logits = outputs["pred_logits"][sample_ind]
             print("pred_logits: " + str(pred_logits))
             cls_tokens = pred_logits[:, 0] # [0] takes the maxes, not the indices
             cls_mask = cls_tokens > box_threshold
