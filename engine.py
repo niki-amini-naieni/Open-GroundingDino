@@ -161,6 +161,9 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
     for samples, targets in metric_logger.log_every(data_loader, 10, header, logger=logger):
         samples = samples.to(device)
 
+        print("samples.shape: " + str(samples.shape))
+        print("targets.shape: " + str(targets.shape))
+
         targets = [{k: to_device(v, device) for k, v in t.items()} for t in targets]
 
         bs = samples.tensors.shape[0]
