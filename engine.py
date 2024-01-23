@@ -170,7 +170,7 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
         bs = samples.tensors.shape[0]
         input_captions = []
         for sample_ind in range(len(targets)):
-            input_captions.append(val_class_names[targets[sample_ind]["labels"][0]] + ' .')
+            input_captions.append("a photo of a " + val_class_names[targets[sample_ind]["labels"][0]] + ' .')
         print("input_captions: " + str(input_captions))
 
         with torch.cuda.amp.autocast(enabled=args.amp):
@@ -180,14 +180,13 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
 
         box_threshold = 0.25
-        text_threshold = 0.35
+        text_threshold = 0.25
         tokenizer = model_no_ddp.tokenizer
         for sample_ind in range(len(targets)):
             tokenized = tokenizer(input_captions[sample_ind])
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
-            gt_phrase = val_class_names[targets[sample_ind]["labels"][0]]
+            gt_phrase = "a photo of a " + val_class_names[targets[sample_ind]["labels"][0]]
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
-            pred_logits = outputs["pred_logits"][sample_ind]
             print("pred_logits: " + str(pred_logits))
             cls_tokens = pred_logits.max(dim=1)[0] # [0] takes the maxes, not the indices
             cls_mask = cls_tokens > box_threshold
@@ -210,10 +209,8 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
                 left_idx = sep_idx[insert_idx - 1]
                 print("left_idx: " + str(left_idx))
                 print("logit.shape: " + str(logit.shape))
-                keep = (logit > text_threshold).sum() > 0
-                if keep:
-                    phrase = get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer, left_idx, right_idx).replace('.', '')
-                    phrases.append(phrase)
+                phrase = get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer, left_idx, right_idx).replace('.', '')
+                phrases.append(phrase)
             print("pred phrases: " + str(phrases))
             print("gt_phrase: " + gt_phrase)
 
