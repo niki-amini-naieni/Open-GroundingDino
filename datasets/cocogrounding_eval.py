@@ -251,6 +251,7 @@ def evaluate(self):
         for catId in catIds}
 
     evaluateImg = self.evaluateImg
+    print("evaluateImg: " + str(evaluateImg))
     maxDet = p.maxDets[-1]
     evalImgs = [
         evaluateImg(imgId, catId, areaRng, maxDet) 
