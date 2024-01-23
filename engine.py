@@ -115,7 +115,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
 
 
 @torch.no_grad()
-def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, output_dir, wo_class_error=False, args=None, logger=None):
+def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_ds, device, output_dir, wo_class_error=False, args=None, logger=None):
 
     model.eval()
     criterion.eval()
@@ -176,7 +176,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
 
         box_threshold = 0.25
         text_threshold = 0.35
-        tokenizer = model.tokenizer
+        tokenizer = model_no_ddp.tokenizer
         tokenized = tokenizer(caption)
         print("tokenized: " + str(tokenized))
         for sample_ind in range(len(targets)):

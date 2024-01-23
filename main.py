@@ -259,7 +259,7 @@ def main(args):
     
     if args.eval:
         os.environ['EVAL_FLAG'] = 'TRUE'
-        test_stats, coco_evaluator = evaluate(model, criterion, postprocessors,
+        test_stats, coco_evaluator = evaluate(model, model_without_ddp, criterion, postprocessors,
                                               data_loader_val, base_ds, device, args.output_dir, wo_class_error=wo_class_error, args=args)
         if args.output_dir:
             utils.save_on_master(coco_evaluator.coco_eval["bbox"].eval, output_dir / "eval.pth")
@@ -308,7 +308,7 @@ def main(args):
                 
         # eval
         test_stats, coco_evaluator = evaluate(
-            model, criterion, postprocessors, data_loader_val, base_ds, device, args.output_dir,
+            model, model_without_ddp, criterion, postprocessors, data_loader_val, base_ds, device, args.output_dir,
             wo_class_error=wo_class_error, args=args, logger=(logger if args.save_log else None)
         )
         map_regular = test_stats['coco_eval_bbox'][0]
