@@ -189,6 +189,7 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
             gt_phrase = val_class_names[targets[sample_ind]["labels"][0]]
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
+            print("pred_logits: " + str(pred_logits))
             cls_tokens = pred_logits.max(dim=1)[0] # [0] takes the maxes, not the indices
             cls_mask = cls_tokens > box_threshold
             logits_masked_by_cls = pred_logits[cls_mask]
@@ -212,10 +213,10 @@ def evaluate(model, model_no_ddp, criterion, postprocessors, data_loader, base_d
                 print("left_idx: " + str(left_idx))
                 phrase = get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer, left_idx, right_idx).replace('.', '')
                 phrases.append(phrase)
-                if phrase == gt_phrase:
-                    pred_cnt += 1
             print("pred phrases: " + str(phrases))
             print("gt_phrase: " + gt_phrase)
+
+            pred_cnt = len(phrases)
 
             count_errs.append(np.abs(gt_cnt - pred_cnt))
 
