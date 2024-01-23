@@ -259,8 +259,7 @@ def evaluate(self):
         for areaRng in p.areaRng 
         for imgId in p.imgIds
     ]
-    print("evalImgs: ") 
-    print(evalImgs)
+
     # this is NOT in the pycocotools code, but could be done outside
     evalImgs = np.asarray(evalImgs).reshape(len(catIds), len(p.areaRng), len(p.imgIds))
     self._paramsEval = copy.deepcopy(self.params)
