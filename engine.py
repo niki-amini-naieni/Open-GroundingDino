@@ -172,12 +172,16 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
 
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
 
+        box_threshold = 0.25
+        text_threshold = 0.35
         for sample_ind in range(len(targets)):
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
-            pred_logits = pred_logits.max(dim=1)[0] # Take the maxes, not the indices
+            cls_tokens = pred_logits.max(dim=1)[0] # Take the maxes, not the indices
+            cls_mask = cls_tokens > box_threshold
+            logits_masked_by_cls = pred_logits[cls_mask]
             print("gt_cnt: " + str(gt_cnt))
-            print("pred_logits.shape: " + str(pred_logits.shape))
+            print("logits_masked_by_cls.shape: " + str(logits_masked_by_cls.shape))
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
         # [scores: [100], labels: [100], boxes: [100, 4]] x B
