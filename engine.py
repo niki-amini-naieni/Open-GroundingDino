@@ -192,6 +192,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
 
             panoptic_evaluator.update(res_pano)
         
+        args.save_results = True
         if args.save_results:
 
 
