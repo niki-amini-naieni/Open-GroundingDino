@@ -181,6 +181,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
 
         if coco_evaluator is not None:
             coco_evaluator.update(res)
+            print("target: " + str(targets[0]))
 
         if panoptic_evaluator is not None:
             res_pano = postprocessors["panoptic"](outputs, target_sizes, orig_target_sizes)
