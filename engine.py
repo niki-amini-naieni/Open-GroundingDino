@@ -7,11 +7,13 @@ import math
 import os
 import sys
 from typing import Iterable
+import bisect
 
 from util.utils import to_device
 import torch
 
 import util.misc as utils
+from groundingdino.util.utils import get_phrases_from_posmap
 from datasets.coco_eval import CocoEvaluator
 from datasets.cocogrounding_eval import CocoGroundingEvaluator
 
@@ -174,6 +176,9 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
 
         box_threshold = 0.25
         text_threshold = 0.35
+        tokenizer = model.tokenizer
+        tokenized = tokenizer(caption)
+        print("tokenized: " + str(tokenized))
         for sample_ind in range(len(targets)):
             gt_cnt = targets[sample_ind]['boxes'].shape[0]
             pred_logits = outputs["pred_logits"].sigmoid()[sample_ind] 
@@ -183,6 +188,23 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
             print("gt_cnt: " + str(gt_cnt))
             print("logits_masked_by_cls.shape: " + str(logits_masked_by_cls.shape))
             count_errs.append(np.abs(gt_cnt - logits_masked_by_cls.shape[0]))
+
+            # DEBUG
+            sep_idx = [i for i in range(len(tokenized['input_ids'])) if tokenized['input_ids'][i] in [101, 102, 1012]]
+            print("sep_idx: " + str(sep_idx))
+        
+            phrases = []
+            for logit in logits_masked_by_cls:
+                max_idx = logit.argmax()
+                print("max_idx: " + str(max_idx))
+                insert_idx = bisect.bisect_left(sep_idx, max_idx)
+                print("insert_idx: " + str(insert_idx))
+                right_idx = sep_idx[insert_idx]
+                print("right_idx: " + str(right_idx))
+                left_idx = sep_idx[insert_idx - 1]
+                print("left_idx: " + str(left_idx))
+                phrases.append(get_phrases_from_posmap(logit > text_threshold, tokenized, tokenizer, left_idx, right_idx).replace('.', ''))
+
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
         # [scores: [100], labels: [100], boxes: [100, 4]] x B
