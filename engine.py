@@ -161,9 +161,6 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
     for samples, targets in metric_logger.log_every(data_loader, 10, header, logger=logger):
         samples = samples.to(device)
 
-        print("samples: " + str(samples))
-        print("targets: " + str(targets))
-
         targets = [{k: to_device(v, device) for k, v in t.items()} for t in targets]
 
         bs = samples.tensors.shape[0]
@@ -173,6 +170,8 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
             outputs = model(samples, captions=input_captions)
 
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
+
+        print("outputs: " + str(outputs))
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
         # [scores: [100], labels: [100], boxes: [100, 4]] x B
