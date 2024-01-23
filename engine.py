@@ -182,6 +182,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
             logits_masked_by_cls = pred_logits[cls_mask]
             print("gt_cnt: " + str(gt_cnt))
             print("logits_masked_by_cls.shape: " + str(logits_masked_by_cls.shape))
+            count_errs.append(np.abs(gt_cnt - logits_masked_by_cls.shape[0]))
 
         results = postprocessors['bbox'](outputs, orig_target_sizes)
         # [scores: [100], labels: [100], boxes: [100, 4]] x B
