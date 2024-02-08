@@ -262,6 +262,7 @@ def evaluate(model, model_without_ddp, criterion, postprocessors, data_loader, b
                 break
     count_mae = sum(abs_errs) / len(abs_errs)
     count_rmse = (np.array(abs_errs) ** 2).mean() ** (1/2)
+    print("# of Images Tested: " + str(len(abs_errs)))
     print("MAE: " + str(count_mae) + ", RMSE: " + str(count_rmse))
     if args.save_results:
         import os.path as osp

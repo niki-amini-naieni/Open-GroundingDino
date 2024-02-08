@@ -12,5 +12,5 @@ python -m torch.distributed.launch  --nproc_per_node=${GPU_NUM} main.py \
         --eval \
         -c ${CFG} \
         --datasets ${DATASETS}  \
-        --pretrain_model_path /scratch/shared/beegfs/nikian/gdino_weights/gdinot-1.8m-odvg.pth \
+        --pretrain_model_path /users/nikian/Open-GroundingDino/logs/checkpoint_best_regular.pth \
         --options text_encoder_type=/scratch/shared/beegfs/nikian/bert-base-uncased
