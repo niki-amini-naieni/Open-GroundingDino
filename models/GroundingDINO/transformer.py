@@ -255,6 +255,8 @@ class Transformer(nn.Module):
         #########################################################
         # Begin Encoder
         #########################################################
+        print("img_token feature enhancer shape: " + str(src_flatten.shape))
+        print("text_token feature enhancer shape: " + str(text_dict["encoded_text"].shape))
         memory, memory_text = self.encoder(
             src_flatten,
             pos=lvl_pos_embed_flatten,
@@ -268,6 +270,8 @@ class Transformer(nn.Module):
             position_ids=text_dict["position_ids"],
             text_self_attention_masks=text_dict["text_self_attention_masks"],
         )
+        print("img token output feature enhancer shape: " + str(memory.shape))
+        print("text token output shape: " + str(memory_text.shape))
         #########################################################
         # End Encoder
         # - memory: bs, \sum{hw}, c
@@ -281,6 +285,8 @@ class Transformer(nn.Module):
         #     if memory.isnan().any() | memory.isinf().any():
         #         import ipdb; ipdb.set_trace()
 
+        print("self.enc_out_class_embed: " + str(self.enc_out_class_embed))
+
         if self.two_stage_type == "standard":  #把encoder的输出作为proposal
             output_memory, output_proposals = gen_encoder_output_proposals(
                 memory, mask_flatten, spatial_shapes
@@ -291,6 +297,7 @@ class Transformer(nn.Module):
                 enc_outputs_class_unselected = self.enc_out_class_embed(output_memory, text_dict)
             else:
                 enc_outputs_class_unselected = self.enc_out_class_embed(output_memory)
+            print("enc_outputs_class_unselected.shape: " + str(enc_outputs_class_unselected.shape))
 
             topk_logits = enc_outputs_class_unselected.max(-1)[0]
             enc_outputs_coord_unselected = (

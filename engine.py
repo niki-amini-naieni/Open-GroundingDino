@@ -16,6 +16,7 @@ from datasets.coco_eval import CocoEvaluator
 from datasets.cocogrounding_eval import CocoGroundingEvaluator
 
 from datasets.panoptic_eval import PanopticEvaluator
+from skimage.filters import threshold_otsu
 
 
 def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
@@ -117,6 +118,11 @@ def get_count_errs(outputs, box_threshold, text_threshold, targets, tokenized_ca
     abs_errs = []
     for sample_ind in range(len(targets)):
         sample_logits = logits[sample_ind]
+
+        # Setting adaptive logit threshold based on Otsu's binarization algo.
+        #max_logits = sample_logits.max(dim=-1).values.cpu().numpy()
+        #box_threshold = threshold_otsu(max_logits)
+
         box_mask = sample_logits.max(dim=-1).values > box_threshold
         sample_logits = sample_logits[box_mask, :]
         for token_ind in range(len(tokenized_captions['input_ids'][sample_ind])):
@@ -128,6 +134,10 @@ def get_count_errs(outputs, box_threshold, text_threshold, targets, tokenized_ca
         sample_logits = sample_logits[text_mask, :]
         gt_count = targets[sample_ind]['labels'].shape[0]
         pred_cnt = sample_logits.shape[0]
+        if pred_cnt == 0:
+            print("All query logits: " + str(logits[sample_ind]))
+            print("First query logit: " + str(logits[sample_ind][0]))
+            print("tokenized caption: " + str(tokenized_captions['input_ids']))
         print("Pred Count: " + str(pred_cnt) + ", GT Count: " + str(gt_count))
         abs_errs.append(abs(gt_count - pred_cnt))
     return abs_errs

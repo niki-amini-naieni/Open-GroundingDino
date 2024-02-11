@@ -278,6 +278,7 @@ class GroundingDINO(nn.Module):
             text_self_attention_masks = text_self_attention_masks[
                 :, : self.max_text_len, : self.max_text_len
             ]
+        print("encoded_text.shape: " + str(encoded_text.shape))
 
         text_dict = {
             "encoded_text": encoded_text,  # bs, 195, d_model
@@ -289,12 +290,16 @@ class GroundingDINO(nn.Module):
 
         if isinstance(samples, (list, torch.Tensor)):
             samples = nested_tensor_from_tensor_list(samples)
+        print("samples (the images).shape: " + str(samples.shape))
         features, poss = self.backbone(samples)
+        print("features (output of backbone).shape: " + str([feature.shape for feature in features]))
         srcs = []
         masks = []
         for l, feat in enumerate(features):
             src, mask = feat.decompose()
+            print("src (decomposed feature).shape: " + str(src.shape))
             srcs.append(self.input_proj[l](src))
+            print("self.input_proj[l](src).shape: " + str(self.input_proj[l](src).shape))
             masks.append(mask)
             assert mask is not None
         if self.num_feature_levels > len(srcs):
@@ -310,7 +315,7 @@ class GroundingDINO(nn.Module):
                 srcs.append(src)
                 masks.append(mask)
                 poss.append(pos_l)
-
+        
         input_query_bbox = input_query_label = attn_mask = dn_meta = None
         hs, reference, hs_enc, ref_enc, init_box_proposal = self.transformer(
             srcs, masks, input_query_bbox, poss, input_query_label, attn_mask, text_dict

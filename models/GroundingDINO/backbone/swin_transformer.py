@@ -710,10 +710,14 @@ class SwinTransformer(nn.Module):
         return tuple(outs)
 
     def forward(self, tensor_list: NestedTensor):
+
         x = tensor_list.tensors
+        print("swin input shape: " + str(x.shape))
 
         """Forward function."""
         x = self.patch_embed(x)
+
+        print("post patch embed shape: " + str(x.shape))
 
         Wh, Ww = x.size(2), x.size(3)
         if self.ape:
