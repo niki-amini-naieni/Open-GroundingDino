@@ -35,6 +35,16 @@ def crop(image, target, region):
         target["area"] = area
         fields.append("boxes")
 
+    if "exemplars" in target:
+        exemplars = target["exemplars"]
+        max_size = torch.as_tensor([w, h], dtype=torch.float32)
+        cropped_exemplars = exemplars - torch.as_tensor([j, i, j, i])
+        cropped_exemplars = torch.min(cropped_exemplars.reshape(-1, 2, 2), max_size)
+        cropped_exemplars = cropped_exemplars.clamp(min=0)
+        area = (cropped_exemplars[:, 1, :] - cropped_exemplars[:, 0, :]).prod(dim=1)
+        target["exemplars"] = cropped_exemplars.reshape(-1, 4)
+        target["exemplar_area"] = area
+
     if "masks" in target:
         # FIXME should we update the area here if there are no boxes?
         target['masks'] = target['masks'][:, i:i + h, j:j + w]
@@ -54,6 +64,12 @@ def crop(image, target, region):
         for field in fields:
             target[field] = target[field][keep]
 
+    if "exemplars" in target:
+        cropped_exemplars = target['exemplars'].reshape(-1, 2, 2)
+        keep = torch.all(cropped_exemplars[:, 1, :] > cropped_exemplars[:, 0, :], dim=1)
+        target["exemplars"] = target["exemplars"][keep]
+        target["exemplar_area"] = target["exemplar_area"][keep]
+
     return cropped_image, target
 
 
@@ -67,6 +83,11 @@ def hflip(image, target):
         boxes = target["boxes"]
         boxes = boxes[:, [2, 1, 0, 3]] * torch.as_tensor([-1, 1, -1, 1]) + torch.as_tensor([w, 0, w, 0])
         target["boxes"] = boxes
+
+    if "exemplars" in target:
+        exemplars = target["exemplars"]
+        exemplars = exemplars[:, [2, 1, 0, 3]] * torch.as_tensor([-1, 1, -1, 1]) + torch.as_tensor([w, 0, w, 0])
+        target["exemplars"] = exemplars
 
     if "masks" in target:
         target['masks'] = target['masks'].flip(-1)
@@ -118,10 +139,20 @@ def resize(image, target, size, max_size=None):
         scaled_boxes = boxes * torch.as_tensor([ratio_width, ratio_height, ratio_width, ratio_height])
         target["boxes"] = scaled_boxes
 
+    if "exemplars" in target:
+        exemplars = target["exemplars"]
+        scaled_exemplars = exemplars * torch.as_tensor([ratio_width, ratio_height, ratio_width, ratio_height])
+        target["exemplars"] = scaled_exemplars
+
     if "area" in target:
         area = target["area"]
         scaled_area = area * (ratio_width * ratio_height)
         target["area"] = scaled_area
+
+    if "exemplar_area" in target:
+        area = target["exemplar_area"]
+        scaled_area = area * (ratio_width * ratio_height)
+        target["exemplar_area"] = scaled_area
 
     h, w = size
     target["size"] = torch.tensor([h, w])
@@ -264,6 +295,11 @@ class Normalize(object):
             boxes = box_xyxy_to_cxcywh(boxes)
             boxes = boxes / torch.tensor([w, h, w, h], dtype=torch.float32)
             target["boxes"] = boxes
+        if "exemplars" in target:
+            exemplars = target["exemplars"]
+            exemplars = box_xyxy_to_cxcywh(exemplars)
+            exemplars = exemplars / torch.tensor([w, h, w, h], dtype=torch.float32)
+            target["exemplars"] = exemplars
         return image, target
 
 

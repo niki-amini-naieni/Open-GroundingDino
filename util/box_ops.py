@@ -131,6 +131,55 @@ def masks_to_boxes(masks):
 
     return torch.stack([x_min, y_min, x_max, y_max], 1)
 
+def boxes_to_masks(boxes, W, H):
+    """
+    Converts boxes to binary masks for Swin transformer layers at 8, 16, 32 patch size resolutions.
+
+    The boxes should be in format [N, cx, cy, w, h] where N is the number of boxes.
+    W is the image width, H is the image height.
+
+    Output masks are returned as an N-length list of dictionaries with keys 8, 16, 32 with values of dims (ceil(H / 8), ceil(W / 8)), (ceil(H / 16), ceil(W / 16), (ceil(H / 32), ceil(W / 32)) 
+    """
+    boxes = box_cxcywh_to_xyxy(boxes)
+    y = torch.arange(0, H, dtype=torch.float) / H
+    x = torch.arange(0, W, dtype=torch.float) / W
+    y, x = torch.meshgrid(y, x)
+    masks = []
+    for box in boxes:
+        mask = x >= box[0]
+        mask = mask * (x <= box[2])
+        mask = mask * (y >= box[1])
+        mask = mask * (y <= box[3])
+        mask_dict = {}
+        mask_dict[8] = torch.nn.MaxPool2d((8, 8), ceil_mode=True)(mask.float().unsqueeze(0)).squeeze()
+        mask_dict[16] = torch.nn.MaxPool2d((16, 16), ceil_mode=True)(mask.float().unsqueeze(0)).squeeze()
+        mask_dict[32] = torch.nn.MaxPool2d((32, 32), ceil_mode=True)(mask.float().unsqueeze(0)).squeeze()
+        mask_dict[64] = torch.nn.MaxPool2d((64, 64), ceil_mode=True)(mask.float().unsqueeze(0)).squeeze()
+        masks.append(mask_dict)
+
+    return masks
+
+def pad_boxes_to_max(boxes):
+    max_h = 0
+    max_w = 0
+    for box in boxes:
+        if box.shape[0] == 0:
+            continue
+        if box.shape[-2] > max_h:
+            max_h = box.shape[-2]
+        if box.shape[-1] > max_w:
+            max_w = box.shape[-1]
+    new_boxes = []
+    for box in boxes:
+        if box.shape[0] > 0:
+            new_boxes.append(torch.nn.functional.pad(box, (0, max_w - box.shape[-1], 0, max_h - box.shape[-2])))
+        else:
+            new_boxes.append(torch.zeros((max_h, max_w)))
+
+    return new_boxes
+ 
+
+
 if __name__ == '__main__':
     x = torch.rand(5, 4)
     y = torch.rand(3, 4)

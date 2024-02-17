@@ -16,6 +16,7 @@
 # ------------------------------------------------------------------------
 import copy
 from typing import List
+import json
 
 import torch
 import torch.nn.functional as F
@@ -36,6 +37,7 @@ from groundingdino.util.misc import (
 from groundingdino.util.utils import get_phrases_from_posmap
 from groundingdino.util.visualizer import COCOVisualizer
 from groundingdino.util.vl_utils import create_positive_map_from_span
+from util.box_ops import pad_boxes_to_max
 
 from ..registry import MODULE_BUILD_FUNCS
 from .backbone import build_backbone
@@ -213,7 +215,7 @@ class GroundingDINO(nn.Module):
     def init_ref_points(self, use_num_queries):
         self.refpoint_embed = nn.Embedding(use_num_queries, self.query_dim)
 
-    def forward(self, samples: NestedTensor, targets: List = None, **kw):
+    def forward(self, samples: NestedTensor, targets: List = None, exemplars = None, **kw):
         """The forward expects a NestedTensor, which consists of:
            - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
            - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
@@ -278,7 +280,6 @@ class GroundingDINO(nn.Module):
             text_self_attention_masks = text_self_attention_masks[
                 :, : self.max_text_len, : self.max_text_len
             ]
-        print("encoded_text.shape: " + str(encoded_text.shape))
 
         text_dict = {
             "encoded_text": encoded_text,  # bs, 195, d_model
@@ -290,16 +291,28 @@ class GroundingDINO(nn.Module):
 
         if isinstance(samples, (list, torch.Tensor)):
             samples = nested_tensor_from_tensor_list(samples)
-        print("samples (the images).shape: " + str(samples.shape))
+
+        #exemplars = [torch.tensor([]) for _ in range(4)]
+        reshaped_exemplars = [
+  pad_boxes_to_max([
+    torch.stack([e[8] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars))
+  ]), 
+  pad_boxes_to_max([
+    torch.stack([e[16] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars))
+  ]), 
+  pad_boxes_to_max([
+    torch.stack([e[32] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars))
+  ]), 
+  pad_boxes_to_max([
+    torch.stack([e[64] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars))
+  ])
+]
         features, poss = self.backbone(samples)
-        print("features (output of backbone).shape: " + str([feature.shape for feature in features]))
         srcs = []
         masks = []
         for l, feat in enumerate(features):
             src, mask = feat.decompose()
-            print("src (decomposed feature).shape: " + str(src.shape))
             srcs.append(self.input_proj[l](src))
-            print("self.input_proj[l](src).shape: " + str(self.input_proj[l](src).shape))
             masks.append(mask)
             assert mask is not None
         if self.num_feature_levels > len(srcs):
@@ -316,12 +329,68 @@ class GroundingDINO(nn.Module):
                 masks.append(mask)
                 poss.append(pos_l)
         
+        
+        tokens_to_add = []
+        max_num_exemplars = 0
+        for batch_ind in range(srcs[0].shape[0]):
+            exemplar_tokens = []
+            for resolution_ind in range(len(reshaped_exemplars)):
+                exemplar_masks = reshaped_exemplars[resolution_ind][batch_ind].bool()
+                feature_map = srcs[resolution_ind][batch_ind]
+                if exemplar_masks.sum() > 0:
+                    feature_map = torch.stack([feature_map] * exemplar_masks.shape[0], dim=-3)
+                    exemplar_tokens.append(torch.mean(feature_map[:, exemplar_masks], dim=1))
+            
+            exemplar_tokens = torch.stack(exemplar_tokens) if len(exemplar_tokens) > 0 else torch.tensor([])
+            if exemplar_tokens.shape[0] > max_num_exemplars:
+                max_num_exemplars = exemplar_tokens.shape[0]
+            tokens_to_add.append(exemplar_tokens) 
+        # Modify text dict to include visual exemplar tokens.
+        new_text_dict = {"encoded_text": [], "text_token_mask": [], "position_ids": [], "text_self_attention_masks": []}
+        for batch_ind in range(len(tokens_to_add)):
+
+            exemplar_tokens = tokens_to_add[batch_ind].cuda()  
+            print("max num exemplars: " + str(max_num_exemplars))
+            print("exemplar_tokens.shape: " + str(exemplar_tokens.shape))          
+
+            init_encoded_text = text_dict["encoded_text"][batch_ind]
+            new_encoded_text = torch.cat([init_encoded_text, exemplar_tokens], dim=0)
+            new_encoded_text = torch.nn.functional.pad(new_encoded_text, (0, 0, 0, max_num_exemplars - exemplar_tokens.shape[0]))
+            new_text_dict["encoded_text"].append(new_encoded_text)
+            
+            init_mask = text_dict["text_token_mask"][batch_ind]
+            new_mask = torch.nn.functional.pad(init_mask, (0, exemplar_tokens.shape[0]), value=True)
+            new_mask = torch.nn.functional.pad(new_mask, (0, max_num_exemplars - exemplar_tokens.shape[0]), value=False)
+            new_text_dict["text_token_mask"].append(new_mask)
+
+            init_pos_ids = text_dict["position_ids"][batch_ind]
+            new_pos_ids = torch.nn.functional.pad(init_pos_ids, (0, max_num_exemplars))
+            new_text_dict["position_ids"].append(new_pos_ids)
+
+            init_atten_mask = text_dict["text_self_attention_masks"][batch_ind]
+            new_atten_mask = torch.nn.functional.pad(init_atten_mask, (0, max_num_exemplars, 0, max_num_exemplars))
+            
+            for ind in range(exemplar_tokens.shape[0]):
+                new_atten_mask[-(ind + 1), -(ind + 1)] = True
+            new_text_dict["text_self_attention_masks"].append(new_atten_mask)
+  
+
+        new_text_dict = {"encoded_text": torch.stack(new_text_dict["encoded_text"]), "text_token_mask": torch.stack(new_text_dict["text_token_mask"]), "position_ids": torch.stack(new_text_dict["position_ids"]), "text_self_attention_masks": torch.stack(new_text_dict["text_self_attention_masks"])}
+
         input_query_bbox = input_query_label = attn_mask = dn_meta = None
         hs, reference, hs_enc, ref_enc, init_box_proposal = self.transformer(
-            srcs, masks, input_query_bbox, poss, input_query_label, attn_mask, text_dict
+            srcs, masks, input_query_bbox, poss, input_query_label, attn_mask, new_text_dict
         )
 
         
+
+        print("pre text_dict['encoded_text'].shape: " + str(text_dict["encoded_text"].shape))   
+        
+        # Remove the visual exemplar tokens after the cross-modality queries have been generated by the decoder.
+        text_dict["encoded_text"] = new_text_dict["encoded_text"][:, :-max_num_exemplars, :]  
+
+        print("post text_dict['encoded_text'].shape: " + str(text_dict["encoded_text"].shape))   
+     
         # deformable-detr-like anchor update
         outputs_coord_list = []
         for dec_lid, (layer_ref_sig, layer_bbox_embed, layer_hs) in enumerate(

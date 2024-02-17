@@ -43,9 +43,10 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
         samples = samples.to(device)
         captions = [t["caption"] for t in targets]
         cap_list = [t["cap_list"] for t in targets]
+        exemplars = [t["exemplars"] for t in targets]
         targets = [{k: v.to(device) for k, v in t.items() if torch.is_tensor(v)} for t in targets]
         with torch.cuda.amp.autocast(enabled=args.amp):
-            outputs = model(samples, captions=captions)
+            outputs = model(samples, captions=captions, exemplars=exemplars)
             loss_dict = criterion(outputs, targets, cap_list, captions)
 
             weight_dict = criterion.weight_dict

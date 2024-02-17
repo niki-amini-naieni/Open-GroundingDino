@@ -6,6 +6,7 @@ from PIL import Image
 import torch
 import random
 import os, sys
+from util.box_ops import boxes_to_masks
 sys.path.append(os.path.dirname(sys.path[0]))
 
 import datasets.transforms as T
@@ -114,12 +115,15 @@ class ODVGDataset(VisionDataset):
         target["size"] = torch.as_tensor([int(h), int(w)])
         target["cap_list"] = caption_list
         target["caption"] = caption
-        target["boxes"] = boxes
-        target["labels"] = classes
+        target["exemplars"] = boxes[-3:]
+        target["boxes"] = boxes[:-3]
+        target["labels"] = classes[:-3]
         # size, cap_list, caption, bboxes, labels
 
         if self.transforms is not None:
             image, target = self.transforms(image, target)
+        
+        target["exemplars"] = boxes_to_masks(target["exemplars"], image.size()[2], image.size()[1])
 
         return image, target
     
