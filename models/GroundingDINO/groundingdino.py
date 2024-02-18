@@ -350,7 +350,10 @@ class GroundingDINO(nn.Module):
             print("exemplar_tokens.shape: " + str(exemplar_tokens.shape))          
 
             init_encoded_text = text_dict["encoded_text"][batch_ind]
-            new_encoded_text = torch.cat([init_encoded_text, exemplar_tokens], dim=0)
+            if exemplar_tokens.shape[0] > 0:
+                new_encoded_text = torch.cat([init_encoded_text, exemplar_tokens], dim=0)
+            else:
+                new_encoded_text = init_encoded_text
             new_encoded_text = torch.nn.functional.pad(new_encoded_text, (0, 0, 0, max_num_ex_tokens - exemplar_tokens.shape[0]))
             new_text_dict["encoded_text"].append(new_encoded_text)
             
