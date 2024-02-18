@@ -115,13 +115,15 @@ class ODVGDataset(VisionDataset):
         target["size"] = torch.as_tensor([int(h), int(w)])
         target["cap_list"] = caption_list
         target["caption"] = caption
-        target["exemplars"] = boxes[-3:]
-        target["boxes"] = boxes[:-3]
-        target["labels"] = classes[:-3]
         # size, cap_list, caption, bboxes, labels
 
         if self.transforms is not None:
             image, target = self.transforms(image, target)
+
+        # Check that there is no random shuffling of boxes per example, so exemplars remain as last 3 boxes.
+        target["exemplars"] = boxes[-3:]
+        target["boxes"] = boxes[:-3]
+        target["labels"] = classes[:-3]
         
         target["exemplars"] = boxes_to_masks(target["exemplars"], image.size()[2], image.size()[1])
 

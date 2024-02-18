@@ -138,7 +138,7 @@ def boxes_to_masks(boxes, W, H):
     The boxes should be in format [N, cx, cy, w, h] where N is the number of boxes.
     W is the image width, H is the image height.
 
-    Output masks are returned as an N-length list of dictionaries with keys 8, 16, 32 with values of dims (ceil(H / 8), ceil(W / 8)), (ceil(H / 16), ceil(W / 16), (ceil(H / 32), ceil(W / 32)) 
+    Output masks are returned as an N-length list of dictionaries with keys 8, 16, 32, 64 with values of dims (ceil(H / 8), ceil(W / 8)), (ceil(H / 16), ceil(W / 16), (ceil(H / 32), ceil(W / 32)), (ceil(H / 64), ceil(W / 64)) 
     """
     boxes = box_cxcywh_to_xyxy(boxes)
     y = torch.arange(0, H, dtype=torch.float) / H
@@ -160,21 +160,46 @@ def boxes_to_masks(boxes, W, H):
     return masks
 
 def pad_boxes_to_max(boxes):
+    """
+    Pads box masks so that all masks in [boxes] have the same width and height, namely, the max width in [boxes] and the max height in [boxes]. Padding is applied to the right and bottom of the boxes.
+
+    boxes should be a list of stacked box masks. Each stack should have masks of the same height and width, but each stack in the list may have different heights and widths to be resolved with [pad_boxes_to_max]. If a stack is empty (i.e., has no boxes), a single mask of zeros is created for that stack.
+
+    [boxes]: a list where each element is a stack of box masks of dim N x H x W, with N being the number of boxes in the image of size H x W, or of dim 1 with 0 length for no boxes.
+    """
     max_h = 0
     max_w = 0
     for box in boxes:
         if box.shape[0] == 0:
             continue
-        if box.shape[-2] > max_h:
-            max_h = box.shape[-2]
-        if box.shape[-1] > max_w:
-            max_w = box.shape[-1]
+        if box.shape[1] > max_h:
+            max_h = box.shape[1]
+        if box.shape[2] > max_w:
+            max_w = box.shape[2]
     new_boxes = []
     for box in boxes:
         if box.shape[0] > 0:
-            new_boxes.append(torch.nn.functional.pad(box, (0, max_w - box.shape[-1], 0, max_h - box.shape[-2])))
+            new_boxes.append(torch.nn.functional.pad(box, (0, max_w - box.shape[2], 0, max_h - box.shape[1])))
         else:
             new_boxes.append(torch.zeros((max_h, max_w)))
+
+    return new_boxes
+
+
+def pad_boxes(boxes, H, W):
+    """
+    Pads box masks so that all masks in [boxes] have the same width and height, namely, the max width in [boxes] and the max height in [boxes]. Padding is applied to the right and bottom of the boxes.
+
+    boxes should be a list of stacked box masks. Each stack should have masks of the same height and width, but each stack in the list may have different heights and widths to be resolved with [pad_boxes_to_max]. If a stack is empty (i.e., has no boxes), a single mask of zeros is created for that stack.
+
+    [boxes]: a list where each element is a stack of box masks of dim N x H x W, with N being the number of boxes in the image of size H x W, or of dim 1 with 0 length for no boxes.
+    """
+    new_boxes = []
+    for box in boxes:
+        if box.shape[0] > 0:
+            new_boxes.append(torch.nn.functional.pad(box, (0, W - box.shape[2], 0, H - box.shape[1])))
+        else:
+            new_boxes.append(torch.zeros((H, W)))
 
     return new_boxes
  
