@@ -345,7 +345,9 @@ class GroundingDINO(nn.Module):
         new_text_dict = {"encoded_text": [], "text_token_mask": [], "position_ids": [], "text_self_attention_masks": []}
         for batch_ind in range(len(tokens_to_add)):
 
-            exemplar_tokens = tokens_to_add[batch_ind].cuda()  
+            exemplar_tokens = tokens_to_add[batch_ind].cuda() 
+            if batch_ind == 1:
+                exemplar_tokens = torch.tensor([]) 
             print("max num exemplars: " + str(max_num_ex_tokens))
             print("exemplar_tokens.shape: " + str(exemplar_tokens.shape))          
 
