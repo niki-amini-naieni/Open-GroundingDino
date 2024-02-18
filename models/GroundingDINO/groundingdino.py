@@ -317,17 +317,13 @@ class GroundingDINO(nn.Module):
         # [reshaped_exemplars] is a list where each element represents a patch resolution from the Swin transformer backbone. The ordering is 8, 16, 32, 64. Specifically, each element is a batch-size-length list containing exemplar masks for all samples in the batch at the patch resolution indicated by the element's index in [reshaped_exemplars].
         reshaped_exemplars = [
         pad_boxes([
-            torch.stack([e[8] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars), srcs[0].shape[-2], srcs[0].shape[-1])
-        ]), 
+            torch.stack([e[8] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars))], srcs[0].shape[-2], srcs[0].shape[-1]), 
         pad_boxes([
-            torch.stack([e[16] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars), srcs[1].shape[-2], srcs[1].shape[-1])
-        ]), 
+            torch.stack([e[16] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars))], srcs[1].shape[-2], srcs[1].shape[-1]), 
         pad_boxes([
-            torch.stack([e[32] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars), srcs[2].shape[-2], srcs[2].shape[-1])
-        ]), 
+            torch.stack([e[32] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars))], srcs[2].shape[-2], srcs[2].shape[-1]), 
         pad_boxes([
-            torch.stack([e[64] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars), srcs[3].shape[-2], srcs[3].shape[-1])
-        ])]
+            torch.stack([e[64] for e in exemplars[sample_ind]]) if len(exemplars[sample_ind]) > 0 else torch.tensor([]) for sample_ind in range(len(exemplars))], srcs[3].shape[-2], srcs[3].shape[-1])]
         
         
         tokens_to_add = []
