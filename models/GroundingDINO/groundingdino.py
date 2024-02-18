@@ -347,8 +347,6 @@ class GroundingDINO(nn.Module):
         for batch_ind in range(len(tokens_to_add)):
 
             exemplar_tokens = tokens_to_add[batch_ind].cuda() 
-            if batch_ind == 1:
-                exemplar_tokens = torch.tensor([]) 
             print("max num exemplars: " + str(max_num_ex_tokens))
             print("exemplar_tokens.shape: " + str(exemplar_tokens.shape))          
 
