@@ -24,6 +24,8 @@ def box_xyxy_to_cxcywh(x):
 def box_iou(boxes1, boxes2):
     area1 = box_area(boxes1)
     area2 = box_area(boxes2)
+    # regressing points so disregard iou calcs.
+    return 0, 0
 
 
     lt = torch.max(boxes1[:, None, :2], boxes2[:, :2])  # [N,M,2]
@@ -47,6 +49,9 @@ def generalized_box_iou(boxes1, boxes2):
     Returns a [N, M] pairwise matrix, where N = len(boxes1)
     and M = len(boxes2)
     """
+
+    # regressing points so disregard iou calcs.
+    return 0
     # degenerate boxes gives inf / nan results
     # so do an early check
     assert (boxes1[:, 2:] >= boxes1[:, :2]).all(), f"{boxes1}"
@@ -66,6 +71,8 @@ def generalized_box_iou(boxes1, boxes2):
 
 # modified from torchvision to also return the union
 def box_iou_pairwise(boxes1, boxes2):
+    # regressing points so disregard iou calcs.
+    return 0, 0
     area1 = box_area(boxes1)
     area2 = box_area(boxes2)
 
@@ -92,6 +99,8 @@ def generalized_box_iou_pairwise(boxes1, boxes2):
     """
     # degenerate boxes gives inf / nan results
     # so do an early check
+    # regressing points so disregard iou calcs.
+    return 0
     assert (boxes1[:, 2:] >= boxes1[:, :2]).all()
     assert (boxes2[:, 2:] >= boxes2[:, :2]).all()
     assert boxes1.shape == boxes2.shape
