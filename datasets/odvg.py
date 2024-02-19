@@ -124,8 +124,9 @@ class ODVGDataset(VisionDataset):
             image, target = self.transforms(image, target)
         
         print("post target['boxes'].shape: " + str(target["boxes"].shape))
-        print("target['keep']: " + str(target["keep"]))
-        print("target['keep'].shape: " + str(target["keep"].shape))
+        if 'keep' in target.keys():
+            print("target['keep']: " + str(target["keep"]))
+            print("target['keep'].shape: " + str(target["keep"].shape))
         # Check that there is no random shuffling of boxes per example, so exemplars remain as last 3 boxes.
         target["exemplars"] = target["boxes"][-3:]
         target["boxes"] = target["boxes"][:-3]
