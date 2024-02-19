@@ -364,10 +364,10 @@ class CocoDetection(torchvision.datasets.CocoDetection):
             idx += 1
             img, target = super(CocoDetection, self).__getitem__(idx)
         
-        print("pre transforms target: " + str(target))
         image_id = self.ids[idx]
         target = {'image_id': image_id, 'annotations': target}
         img, target = self.prepare(img, target)
+        print("pre transforms target: " + str(target))
         
         if self._transforms is not None:
             img, target = self._transforms(img, target)
