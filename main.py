@@ -280,6 +280,7 @@ def main(args):
     for epoch in range(args.start_epoch, args.epochs):
         
         epoch_start_time = time.time()
+        '''
         if args.distributed:
             sampler_train.set_epoch(epoch)
 
@@ -306,7 +307,7 @@ def main(args):
                 }
 
                 utils.save_on_master(weights, checkpoint_path)
-                
+        '''        
         # eval
         val_mae, test_stats, coco_evaluator = evaluate(
             model, model_without_ddp, criterion, postprocessors, data_loader_val, base_ds, device, args.output_dir,
