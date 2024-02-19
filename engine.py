@@ -194,13 +194,14 @@ def evaluate(model, model_without_ddp, criterion, postprocessors, data_loader, b
         samples = samples.to(device)
 
         targets = [{k: to_device(v, device) for k, v in t.items()} for t in targets]
+        exemplars = [t["exemplars"] for t in targets]
 
         bs = samples.tensors.shape[0]
         input_captions = [cat_list[target['labels'][0]] + " ." for target in targets]
         print("input_captions: " + str(input_captions))
         with torch.cuda.amp.autocast(enabled=args.amp):
 
-            outputs = model(samples, captions=input_captions)
+            outputs = model(samples, captions=input_captions, exemplars=exemplars)
         tokenized_captions = model_without_ddp.tokenizer(input_captions)
         abs_errs += get_count_errs(outputs, args.box_threshold, args.text_threshold, targets, tokenized_captions)
         orig_target_sizes = torch.stack([t["orig_size"] for t in targets], dim=0)
