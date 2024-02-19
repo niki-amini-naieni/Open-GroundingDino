@@ -127,10 +127,16 @@ class ODVGDataset(VisionDataset):
         if 'keep' in target.keys():
             print("target['keep']: " + str(target["keep"]))
             print("target['keep'].shape: " + str(target["keep"].shape))
-        # Check that there is no random shuffling of boxes per example, so exemplars remain as last 3 boxes.
-        target["exemplars"] = target["boxes"][-3:]
-        target["boxes"] = target["boxes"][:-3]
-        target["labels"] = target["labels"][:-3]
+        # The exemplars are always at the end, but some might be removed due to cropping.
+        num_exemplars = 3
+        if 'keep' in target.keys():
+            num_exemplars = torch.sum(target["keep"][-3:])
+        if num_exemplars > 0:
+            target["exemplars"] = target["boxes"][-num_exemplars:]
+            target["boxes"] = target["boxes"][:-num_exemplars]
+            target["labels"] = target["labels"][:-num_exemplars]
+        else:
+            target["exemplars"] = torch.tensor([])
         
         target["exemplars"] = boxes_to_masks(target["exemplars"], image.size()[2], image.size()[1])
 

@@ -376,6 +376,8 @@ class CocoDetection(torchvision.datasets.CocoDetection):
             for hack_runner in self.aux_target_hacks:
                 target, img = hack_runner(target, img=img)
 
+        # assert no cropping for evaluation.
+        assert 'keep' not in target.keys()
         # Check that there is no random shuffling of boxes per example, so exemplars remain as last 3 boxes.
         target["exemplars"] = target["boxes"][-3:]
         target["boxes"] = target["boxes"][:-3]
