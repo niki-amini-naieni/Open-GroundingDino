@@ -126,8 +126,6 @@ class ODVGDataset(VisionDataset):
         target["exemplars"] = target["boxes"][-3:]
         target["boxes"] = target["boxes"][:-3]
         target["labels"] = target["labels"][:-3]
-        print("Boxes: " + str(target["boxes"]))
-        print("Exemplars: " + str(target["exemplars"]))
         
         target["exemplars"] = boxes_to_masks(target["exemplars"], image.size()[2], image.size()[1])
 
