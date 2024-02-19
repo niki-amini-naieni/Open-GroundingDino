@@ -136,6 +136,7 @@ class ODVGDataset(VisionDataset):
             target["boxes"] = target["boxes"][:-num_exemplars]
             target["labels"] = target["labels"][:-num_exemplars]
         else:
+            print("all exemplars have been cropped out target['keep']: " + str(target["keep"]))
             target["exemplars"] = torch.tensor([])
         
         target["exemplars"] = boxes_to_masks(target["exemplars"], image.size()[2], image.size()[1])
