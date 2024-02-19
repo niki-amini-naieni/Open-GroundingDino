@@ -15,7 +15,7 @@ from pathlib import Path
 import random
 import os
 from typing import Any, Callable, List, Optional, Tuple
-
+from util.box_ops import boxes_to_masks
 from PIL import Image
 
 import torch
@@ -367,7 +367,6 @@ class CocoDetection(torchvision.datasets.CocoDetection):
         image_id = self.ids[idx]
         target = {'image_id': image_id, 'annotations': target}
         img, target = self.prepare(img, target)
-        print("pre transforms target: " + str(target))
         
         if self._transforms is not None:
             img, target = self._transforms(img, target)
@@ -376,7 +375,13 @@ class CocoDetection(torchvision.datasets.CocoDetection):
         if self.aux_target_hacks is not None:
             for hack_runner in self.aux_target_hacks:
                 target, img = hack_runner(target, img=img)
-        print("post transforms target: " + str(target))
+
+        # Check that there is no random shuffling of boxes per example, so exemplars remain as last 3 boxes.
+        target["exemplars"] = target["boxes"][-3:]
+        target["boxes"] = target["boxes"][:-3]
+        target["labels"] = target["labels"][:-3]
+        
+        target["exemplars"] = boxes_to_masks(target["exemplars"], img.size()[2], img.size()[1])
 
         return img, target
 
