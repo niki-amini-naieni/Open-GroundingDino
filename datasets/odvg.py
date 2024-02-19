@@ -137,7 +137,7 @@ class ODVGDataset(VisionDataset):
             target["labels"] = target["labels"][:-num_exemplars]
         else:
             print("all exemplars have been cropped out target['keep']: " + str(target["keep"]))
-            target["exemplars"] = torch.tensor([]).cuda()
+            target["exemplars"] = target["boxes"][len(target["boxes"]):]
         print("num_exemplars: " + str(num_exemplars))
         print("target['exemplars'].shape: " + str(target['exemplars'].shape))
         
