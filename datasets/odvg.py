@@ -118,10 +118,14 @@ class ODVGDataset(VisionDataset):
         target["boxes"] = boxes
         target["labels"] = classes
         # size, cap_list, caption, bboxes, labels
+        print("pre target['boxes'].shape: " + str(target["boxes"].shape))
 
         if self.transforms is not None:
             image, target = self.transforms(image, target)
-
+        
+        print("post target['boxes'].shape: " + str(target["boxes"].shape))
+        print("target['keep']: " + str(target["keep"]))
+        print("target['keep'].shape: " + str(target["keep"].shape))
         # Check that there is no random shuffling of boxes per example, so exemplars remain as last 3 boxes.
         target["exemplars"] = target["boxes"][-3:]
         target["boxes"] = target["boxes"][:-3]

@@ -54,6 +54,8 @@ def crop(image, target, region):
         for field in fields:
             target[field] = target[field][keep]
 
+        target["keep"] = keep
+
     return cropped_image, target
 
 
