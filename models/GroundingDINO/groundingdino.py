@@ -205,7 +205,6 @@ class GroundingDINO(nn.Module):
             self.refpoint_embed = None
 
         self._reset_parameters()
-        print("Swin positional encoding?: " + str(self.backbone.ape))
 
     def _reset_parameters(self):
         # init input_proj

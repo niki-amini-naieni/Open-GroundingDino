@@ -720,6 +720,7 @@ class SwinTransformer(nn.Module):
         print("post patch embed shape: " + str(x.shape))
 
         Wh, Ww = x.size(2), x.size(3)
+        print("Swin have ape: " + str(self.ape))
         if self.ape:
             # interpolate the position embedding to the corresponding size
             absolute_pos_embed = F.interpolate(
