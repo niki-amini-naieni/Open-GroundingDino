@@ -132,9 +132,9 @@ class ODVGDataset(VisionDataset):
         if 'keep' in target.keys():
             num_exemplars = torch.sum(target["keep"][-3:])
         if num_exemplars > 0:
-            target["exemplars"] = target["boxes"][-num_exemplars:]
-            target["boxes"] = target["boxes"][:-num_exemplars]
-            target["labels"] = target["labels"][:-num_exemplars]
+            target["exemplars"] = target["boxes"][-1:]
+            target["boxes"] = target["boxes"][:-1]
+            target["labels"] = target["labels"][:-1]
         else:
             print("all exemplars have been cropped out target['keep']: " + str(target["keep"]))
             target["exemplars"] = target["boxes"][len(target["boxes"]):]

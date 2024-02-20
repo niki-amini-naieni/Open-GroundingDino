@@ -379,9 +379,9 @@ class CocoDetection(torchvision.datasets.CocoDetection):
         # assert no cropping for evaluation.
         assert 'keep' not in target.keys()
         # Check that there is no random shuffling of boxes per example, so exemplars remain as last 3 boxes.
-        target["exemplars"] = target["boxes"][-3:]
-        target["boxes"] = target["boxes"][:-3]
-        target["labels"] = target["labels"][:-3]
+        target["exemplars"] = target["boxes"][-1:]
+        target["boxes"] = target["boxes"][:-1]
+        target["labels"] = target["labels"][:-1]
         
         target["exemplars"] = boxes_to_masks(target["exemplars"], img.size()[2], img.size()[1])
 
