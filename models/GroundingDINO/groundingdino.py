@@ -378,6 +378,7 @@ class GroundingDINO(nn.Module):
 
         new_text_dict = {"encoded_text": torch.stack(new_text_dict["encoded_text"]), "text_token_mask": torch.stack(new_text_dict["text_token_mask"]), "position_ids": torch.stack(new_text_dict["position_ids"]), "text_self_attention_masks": torch.stack(new_text_dict["text_self_attention_masks"])}
         if skip_exemplars:
+            print("skipping exemplars")
             new_text_dict = text_dict
 
         input_query_bbox = input_query_label = attn_mask = dn_meta = None
