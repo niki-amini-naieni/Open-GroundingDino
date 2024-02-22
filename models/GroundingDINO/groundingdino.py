@@ -344,17 +344,17 @@ class GroundingDINO(nn.Module):
             tokens_to_add.append(exemplar_tokens) 
 
         # Save information for debugging.
-        np.save("features_8.npy", srcs[0][0].cpu().numpy())
-        np.save("exemplar_tokens_8.npy", tokens_to_add[0][0].cpu().numpy())
+        np.save("features_8.npy", srcs[0][0].detach().cpu().numpy())
+        np.save("exemplar_tokens_8.npy", tokens_to_add[0][0].detach().cpu().numpy())
 
-        np.save("features_16.npy", srcs[1][0].cpu().numpy())
-        np.save("exemplar_tokens_16.npy", tokens_to_add[0][1].cpu().numpy())
+        np.save("features_16.npy", srcs[1][0].detach().cpu().numpy())
+        np.save("exemplar_tokens_16.npy", tokens_to_add[0][1].detach().cpu().numpy())
 
-        np.save("features_32.npy", srcs[2][0].cpu().numpy())
-        np.save("exemplar_tokens_32.npy", tokens_to_add[0][2].cpu().numpy())
+        np.save("features_32.npy", srcs[2][0].detach().cpu().numpy())
+        np.save("exemplar_tokens_32.npy", tokens_to_add[0][2].detach().cpu().numpy())
 
-        np.save("features_64.npy", srcs[3][0].cpu().numpy())
-        np.save("exemplar_tokens_64.npy", tokens_to_add[0][3].cpu().numpy())
+        np.save("features_64.npy", srcs[3][0].detach().cpu().numpy())
+        np.save("exemplar_tokens_64.npy", tokens_to_add[0][3].detach().cpu().numpy())
 
 
         # Modify text dict to include visual exemplar tokens.
