@@ -118,15 +118,10 @@ class ODVGDataset(VisionDataset):
         target["boxes"] = boxes
         target["labels"] = classes
         # size, cap_list, caption, bboxes, labels
-        print("pre target['boxes'].shape: " + str(target["boxes"].shape))
 
         if self.transforms is not None:
             image, target = self.transforms(image, target)
-        
-        print("post target['boxes'].shape: " + str(target["boxes"].shape))
-        if 'keep' in target.keys():
-            print("target['keep']: " + str(target["keep"]))
-            print("target['keep'].shape: " + str(target["keep"].shape))
+
         # The exemplars are always at the end, but some might be removed due to cropping.
         num_exemplars = 3
         if 'keep' in target.keys():
@@ -136,10 +131,7 @@ class ODVGDataset(VisionDataset):
             target["boxes"] = target["boxes"][:-num_exemplars]
             target["labels"] = target["labels"][:-num_exemplars]
         else:
-            print("all exemplars have been cropped out target['keep']: " + str(target["keep"]))
             target["exemplars"] = target["boxes"][len(target["boxes"]):]
-        print("num_exemplars: " + str(num_exemplars))
-        print("target['exemplars'].shape: " + str(target['exemplars'].shape))
         
         target["exemplars"] = boxes_to_masks(target["exemplars"], image.size()[2], image.size()[1])
 
