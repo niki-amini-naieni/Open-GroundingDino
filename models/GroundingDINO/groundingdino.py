@@ -359,7 +359,7 @@ class GroundingDINO(nn.Module):
             np.save("features_64_" + str(batch_ind) + ".npy", srcs[3][batch_ind].detach().cpu().numpy())
             np.save("exemplar_tokens_64_" + str(batch_ind) + ".npy", tokens_to_add[batch_ind][3].detach().cpu().numpy())
 
-        raise Exception("Files Saved")
+        #raise Exception("Files Saved")
 
 
         # Modify text dict to include visual exemplar tokens.
