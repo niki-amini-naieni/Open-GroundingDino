@@ -344,19 +344,20 @@ class GroundingDINO(nn.Module):
             tokens_to_add.append(exemplar_tokens) 
 
         # Save information for debugging.
-        np.save("image.npy", samples.tensors[0].detach().cpu().numpy())    
-        
-        np.save("features_8.npy", srcs[0][0].detach().cpu().numpy())
-        np.save("exemplar_tokens_8.npy", tokens_to_add[0][0].detach().cpu().numpy())
+        for batch_ind in range(4):
+            np.save("image_" + str(batch_ind) + ".npy", samples.tensors[batch_ind].detach().cpu().numpy())    
+            
+            np.save("features_8_" + str(batch_ind) + ".npy", srcs[0][batch_ind].detach().cpu().numpy())
+            np.save("exemplar_tokens_8_" + str(batch_ind) + ".npy", tokens_to_add[0][0].detach().cpu().numpy())
 
-        np.save("features_16.npy", srcs[1][0].detach().cpu().numpy())
-        np.save("exemplar_tokens_16.npy", tokens_to_add[0][1].detach().cpu().numpy())
+            np.save("features_16_" + str(batch_ind) + ".npy", srcs[1][batch_ind].detach().cpu().numpy())
+            np.save("exemplar_tokens_16_" + str(batch_ind) + ".npy", tokens_to_add[0][1].detach().cpu().numpy())
 
-        np.save("features_32.npy", srcs[2][0].detach().cpu().numpy())
-        np.save("exemplar_tokens_32.npy", tokens_to_add[0][2].detach().cpu().numpy())
+            np.save("features_32_" + str(batch_ind) + ".npy", srcs[2][batch_ind].detach().cpu().numpy())
+            np.save("exemplar_tokens_32_" + str(batch_ind) + ".npy", tokens_to_add[0][2].detach().cpu().numpy())
 
-        np.save("features_64.npy", srcs[3][0].detach().cpu().numpy())
-        np.save("exemplar_tokens_64.npy", tokens_to_add[0][3].detach().cpu().numpy())
+            np.save("features_64_" + str(batch_ind) + ".npy", srcs[3][batch_ind].detach().cpu().numpy())
+            np.save("exemplar_tokens_64_" + str(batch_ind) + ".npy", tokens_to_add[0][3].detach().cpu().numpy())
 
         raise Exception("Files Saved")
 
