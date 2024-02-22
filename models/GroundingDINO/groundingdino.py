@@ -348,16 +348,16 @@ class GroundingDINO(nn.Module):
             np.save("image_" + str(batch_ind) + ".npy", samples.tensors[batch_ind].detach().cpu().numpy())    
             
             np.save("features_8_" + str(batch_ind) + ".npy", srcs[0][batch_ind].detach().cpu().numpy())
-            np.save("exemplar_tokens_8_" + str(batch_ind) + ".npy", tokens_to_add[0][0].detach().cpu().numpy())
+            np.save("exemplar_tokens_8_" + str(batch_ind) + ".npy", tokens_to_add[batch_ind][0].detach().cpu().numpy())
 
             np.save("features_16_" + str(batch_ind) + ".npy", srcs[1][batch_ind].detach().cpu().numpy())
-            np.save("exemplar_tokens_16_" + str(batch_ind) + ".npy", tokens_to_add[0][1].detach().cpu().numpy())
+            np.save("exemplar_tokens_16_" + str(batch_ind) + ".npy", tokens_to_add[batch_ind][1].detach().cpu().numpy())
 
             np.save("features_32_" + str(batch_ind) + ".npy", srcs[2][batch_ind].detach().cpu().numpy())
-            np.save("exemplar_tokens_32_" + str(batch_ind) + ".npy", tokens_to_add[0][2].detach().cpu().numpy())
+            np.save("exemplar_tokens_32_" + str(batch_ind) + ".npy", tokens_to_add[batch_ind][2].detach().cpu().numpy())
 
             np.save("features_64_" + str(batch_ind) + ".npy", srcs[3][batch_ind].detach().cpu().numpy())
-            np.save("exemplar_tokens_64_" + str(batch_ind) + ".npy", tokens_to_add[0][3].detach().cpu().numpy())
+            np.save("exemplar_tokens_64_" + str(batch_ind) + ".npy", tokens_to_add[batch_ind][3].detach().cpu().numpy())
 
         raise Exception("Files Saved")
 
