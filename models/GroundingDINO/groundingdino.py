@@ -17,6 +17,7 @@
 import copy
 from typing import List
 import json
+import numpy as np
 
 import torch
 import torch.nn.functional as F
@@ -341,6 +342,21 @@ class GroundingDINO(nn.Module):
             if exemplar_tokens.shape[0] > max_num_ex_tokens:
                 max_num_ex_tokens = exemplar_tokens.shape[0]
             tokens_to_add.append(exemplar_tokens) 
+
+        # Save information for debugging.
+        np.save("features_8.npy", srcs[0][0].cpu().numpy())
+        np.save("exemplar_tokens_8.npy", tokens_to_add[0][0].cpu().numpy())
+
+        np.save("features_16.npy", srcs[1][0].cpu().numpy())
+        np.save("exemplar_tokens_16.npy", tokens_to_add[0][1].cpu().numpy())
+
+        np.save("features_32.npy", srcs[2][0].cpu().numpy())
+        np.save("exemplar_tokens_32.npy", tokens_to_add[0][2].cpu().numpy())
+
+        np.save("features_64.npy", srcs[3][0].cpu().numpy())
+        np.save("exemplar_tokens_64.npy", tokens_to_add[0][3].cpu().numpy())
+
+
         # Modify text dict to include visual exemplar tokens.
         new_text_dict = {"encoded_text": [], "text_token_mask": [], "position_ids": [], "text_self_attention_masks": []}
         skip_exemplars = False
