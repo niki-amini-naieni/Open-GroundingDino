@@ -358,6 +358,8 @@ class GroundingDINO(nn.Module):
         np.save("features_64.npy", srcs[3][0].detach().cpu().numpy())
         np.save("exemplar_tokens_64.npy", tokens_to_add[0][3].detach().cpu().numpy())
 
+        raise Exception("Files Saved")
+
 
         # Modify text dict to include visual exemplar tokens.
         new_text_dict = {"encoded_text": [], "text_token_mask": [], "position_ids": [], "text_self_attention_masks": []}
